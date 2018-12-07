@@ -15,14 +15,16 @@ struct Response {
 }
 
 fn new(_req: &HttpRequest) -> Json<Response> {
+    let font_family = std::env::var("KOCAPTCHA_FONT_FAMILY").ok();
+
     // File name is md5
-    let captcha_md5 = generate_text::generate_text(Some("Ubuntu"));
+    let captcha_md5 = generate_text::generate_text(font_family);
 
     let response = Json(Response { md5: captcha_md5.clone(), url: format!("/captchas/{}.png", captcha_md5.clone()) });
 
     let _ = thread::spawn(move || {
         thread::sleep(Duration::new(60 * 5, 0)); // sleep ~5 minutes
-        std::fs::remove_file(format!("./captchas/{}.png", captcha_md5.clone()));
+        let _ = std::fs::remove_file(format!("./captchas/{}.png", captcha_md5.clone()));
     });
 
     return response;

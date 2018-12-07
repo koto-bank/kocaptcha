@@ -18,11 +18,11 @@ use self::rand::distributions::Alphanumeric;
 use self::crypto::md5::Md5;
 use self::crypto::digest::Digest;
 
-pub fn generate_text(family: Option<&str>) -> String {
+pub fn generate_text(family: Option<String>) -> String {
     let sysfonts = system_fonts::query_all();
-    let family = family.unwrap_or(sysfonts.first().unwrap()); // Use the first available font if none is specified
+    let family = family.unwrap_or(sysfonts.first().unwrap().to_string()); // Use the first available font if none is specified
 
-    let prop = system_fonts::FontPropertyBuilder::new().family(family).build();
+    let prop = system_fonts::FontPropertyBuilder::new().family(&family).build();
     let (font_data, _) = system_fonts::get(&prop).unwrap();
 
     let font = FontCollection::from_bytes(font_data).unwrap().into_font().unwrap();
