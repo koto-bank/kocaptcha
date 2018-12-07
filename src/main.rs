@@ -34,6 +34,8 @@ fn index(_req: &HttpRequest) -> &'static str {
     return "\
 Head to /new for a captcha. The response will be in JSON format, with md5 field having the md5 of the answer and link field having a relative link to the image.
 The captcha will expire and the image will be removed withing 5 minutes.
+
+The code is here: https://github.com/koto-bank/kocaptcha
 ";
 }
 
