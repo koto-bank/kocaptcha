@@ -18,7 +18,7 @@ use self::rand::distributions::Alphanumeric;
 use self::crypto::md5::Md5;
 use self::crypto::digest::Digest;
 
-pub fn generate_text(family: Option<String>) -> String {
+pub fn generate_text(family: Option<String>) -> (String, String) {
     let sysfonts = system_fonts::query_all();
     let family = family.unwrap_or(sysfonts.first().unwrap().to_string()); // Use the first available font if none is specified
 
@@ -69,8 +69,12 @@ pub fn generate_text(family: Option<String>) -> String {
     let mut md5 = Md5::new();
     md5.input_str(&text);
     let md5_s = md5.result_str();
+    md5.reset();
 
-    let _ = image.save(format!("./captchas/{}.png", md5_s)).unwrap();
+    md5.input(&image.clone().into_raw());
+    let md5_i_s = md5.result_str();
 
-    return md5_s;
+    let _ = image.save(format!("./captchas/{}.png", md5_i_s)).unwrap();
+
+    return (md5_s, md5_i_s);
 }
