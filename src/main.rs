@@ -11,6 +11,7 @@ use actix_web::{server, fs, Json,  App, HttpRequest};
 #[derive(Serialize)]
 struct Response {
     md5: String,
+    token: String,
     url: String
 }
 
@@ -20,7 +21,13 @@ fn new(_req: &HttpRequest) -> Json<Response> {
     // File name is md5
     let (captcha_md5, image_md5) = generate_text::generate_text(font_family);
 
-    let response = Json(Response { md5: captcha_md5.clone(), url: format!("/captchas/{}.png", image_md5.clone()) });
+    let response = Json(
+        Response {
+            md5: captcha_md5.clone(),
+            token: image_md5.clone(),
+            url: format!("/captchas/{}.png", image_md5.clone())
+        }
+    );
 
     let _ = thread::spawn(move || {
         thread::sleep(Duration::new(60 * 5, 0)); // sleep ~5 minutes
@@ -32,7 +39,7 @@ fn new(_req: &HttpRequest) -> Json<Response> {
 
 fn index(_req: &HttpRequest) -> &'static str {
     return "\
-Head to /new for a captcha. The response will be in JSON format, with md5 field having the md5 of the answer and link field having a relative link to the image.
+Head to /new for a captcha. The response will be in JSON format, with md5 field having the md5 of the answer, link field having a relative link to the image and token field being a token you can use to identify this captcha in your cache.
 The captcha will expire and the image will be removed withing 5 minutes.
 
 The code is here: https://github.com/koto-bank/kocaptcha
