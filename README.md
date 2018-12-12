@@ -1,7 +1,7 @@
 A simple CAPTCHA service with a single API endpoint at `/new` that will give you a JSON output of `md5` (the md5 of the answer)
 and `url` (the captcha image). Captchas expire after five minutes and delete themselves.
 
-The files are stored in the captchas directory, which is deleted on exist.
+The files are stored in the captchas directory, which is deleted on exit.
 
 The only dependency seems to be fontconfig to find fonts,
 which can be set with the `KOCAPTCHA_FONT_FAMILY` environmental variable.
