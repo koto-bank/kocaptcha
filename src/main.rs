@@ -52,7 +52,7 @@ fn main() {
                 .resource("/new", |r| r.f(new))
                 .resource("/", |r| r.f(index))
                 .finish()
-    ).bind("0.0.0.0:8424").unwrap().run();
+    ).bind("0.0.0.0:9093").unwrap().run();
 
     // Remove captcha directory if there are still any there
     let _ = std::fs::remove_dir_all("./captchas");
