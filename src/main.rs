@@ -1,4 +1,6 @@
 mod generate_text;
+#[cfg(feature = "generated-captchas-stat")]
+mod generated_captchas_stat;
 
 use std::time::Duration;
 use std::thread;
@@ -33,12 +35,23 @@ fn new(_req: &HttpRequest) -> Json<Response> {
         let _ = std::fs::remove_file(format!("./captchas/{}.png", image_md5.clone()));
     });
 
+    // Optionally add 1 to the stat thing
+    #[cfg(feature = "generated-captchas-stat")]
+    generated_captchas_stat::inc();
+
     return response;
 }
 
 fn index(_req: &HttpRequest) -> String {
+    #[allow(unused_mut)]
     let mut result: String = include_str!("index.txt").to_string();
 
+    #[cfg(feature = "generated-captchas-stat")]
+    {
+        let gend = generated_captchas_stat::get();
+
+        result += &format!("\nCaptchas generated since last restart: {}", gend)
+    }
 
     return result;
 }
