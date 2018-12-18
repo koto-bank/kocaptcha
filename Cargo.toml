@@ -2,6 +2,7 @@
 name = "kocaptcha"
 version = "0.1.0"
 authors = ["Ekaterina Vaartis <vaartis@cock.li>"]
+edition = "2018"
 
 [dependencies]
 font-loader = "0.7.0"

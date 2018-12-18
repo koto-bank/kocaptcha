@@ -1,10 +1,9 @@
-extern crate actix_web;
-#[macro_use] extern crate serde_derive;
-
 mod generate_text;
 
 use std::time::Duration;
 use std::thread;
+
+use serde_derive::Serialize;
 
 use actix_web::{server, fs, Json,  App, HttpRequest};
 
