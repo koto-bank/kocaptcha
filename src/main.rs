@@ -36,13 +36,11 @@ fn new(_req: &HttpRequest) -> Json<Response> {
     return response;
 }
 
-fn index(_req: &HttpRequest) -> &'static str {
-    return "\
-Head to /new for a captcha. The response will be in JSON format, with md5 field having the md5 of the answer, link field having a relative link to the image and token field being a token you can use to identify this captcha in your cache.
-The captcha will expire and the image will be removed withing 5 minutes.
+fn index(_req: &HttpRequest) -> String {
+    let mut result: String = include_str!("index.txt").to_string();
 
-The code is here: https://github.com/koto-bank/kocaptcha
-";
+
+    return result;
 }
 
 fn main() {
