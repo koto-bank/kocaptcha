@@ -3,6 +3,6 @@ The response will be in JSON format, with:
 - md5 field having the md5 of the answer
 - link field having a relative link to the image
 - token field being a token you can use to identify this captcha in your cache
-The captcha will expire and the image will be removed withing 5 minutes.
+The captcha will expire and the image will be removed within 5 minutes.
 
 The code is here: https://github.com/koto-bank/kocaptcha
