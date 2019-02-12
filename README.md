@@ -7,4 +7,4 @@ The only dependency seems to be fontconfig to find fonts,
 which can be set with the `KOCAPTCHA_FONT_FAMILY` environmental variable.
 
 To run, simply do `KOCAPTCHA_FONT_FAMILY=FontFamily cargo run --release` (if no font family is provided, the first available is used).
-This will start the service at `0.0.0.0:8424`.
+This will start the service at `0.0.0.0:9093`.
