@@ -1,3 +1,5 @@
+[![Docker Pulls](https://img.shields.io/docker/pulls/vaartis/kocaptcha.svg)](https://hub.docker.com/r/vaartis/kocaptcha)
+
 A simple CAPTCHA service with a single API endpoint at `/new` that will give you a JSON output of `md5` (the md5 of the answer)
 and `url` (the captcha image). Captchas expire after five minutes and delete themselves.
 
