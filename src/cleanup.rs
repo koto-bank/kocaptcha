@@ -39,7 +39,7 @@ impl Handler<AddEntry> for CleanupActor {
     }
 }
 
-static KEEP_SECS: u64 = 5;
+static KEEP_SECS: u64 = 5 * 60;
 
 impl Handler<RunCleanup> for CleanupActor {
     type Result = ();

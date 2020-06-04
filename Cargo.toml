@@ -1,22 +1,21 @@
 [package]
 name = "kocaptcha"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Ekaterina Vaartis <vaartis@cock.li>"]
 edition = "2018"
 
 [dependencies]
-font-loader = "0.7.0"
-imageproc = "0.17.0"
-image = "0.20.1"
+font-loader = "0.9.0"
+imageproc = "0.20.0"
+image = { version = "0.23.4", default-features = false, features = ["png"] }
 rusttype = "0.7.3"
-rand = "0.6.1"
+rand = "0.7.3"
 rust-crypto = "^0.2"
 
-actix = "0.9.0"
+actix = { version = "0.9.0", default-features = false }
 actix-rt = "1.1.1"
 actix-web = "2.0.0"
 actix-files = "0.2.2"
 
 serde = "1.0.80"
-serde_json = "1.0.33"
 serde_derive = "1.0.80"

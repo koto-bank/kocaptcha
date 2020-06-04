@@ -10,7 +10,7 @@ use self::rusttype::{Font, Scale};
 use self::image::{Rgb, RgbImage, Pixel};
 use self::imageproc::drawing::draw_text_mut;
 use self::imageproc::noise::salt_and_pepper_noise_mut;
-use self::imageproc::affine::*;
+use self::imageproc::geometric_transformations::*;
 
 use self::rand::{thread_rng, Rng};
 use self::rand::distributions::Alphanumeric;
@@ -44,21 +44,18 @@ pub fn generate_text(font: &Font) -> (String, String) {
         &mut image,
         Rgb([255, 255, 255]), // white
         w / 8,
-        0, // Seems to be roughly in the middle
+        rng.gen_range(0, 30), // Seems to be roughly in the middle
         scale,
         &font,
         &text
     );
 
-    image = affine(
+    image = warp(
         &image,
-        Affine2::from_matrix_unchecked([
-            1.0, rng.gen_range(-1.0, 1.0), 0.0,
-            rng.gen_range(0.1, 0.2), 1.0, 0.0,
-            0.0, 1.0, 1.0
-        ]),
-        Interpolation::Bilinear
-    ).unwrap();
+        &(Projection::translate(1.0, rng.gen_range(-1.0, 1.0)) * Projection::rotate(rng.gen_range(0.1, 0.2))),
+        Interpolation::Bilinear,
+        *Pixel::from_slice(&[0, 0, 0])
+    );
 
     salt_and_pepper_noise_mut(
         &mut image,
