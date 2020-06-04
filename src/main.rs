@@ -1,13 +1,21 @@
 mod generate_text;
-#[cfg(feature = "generated-captchas-stat")]
-mod generated_captchas_stat;
+mod stats;
+mod cleanup;
 
-use std::time::Duration;
-use std::thread;
+use rusttype::Font;
 
 use serde_derive::Serialize;
 
-use actix_web::{server, fs, Json,  App, HttpRequest};
+use actix::prelude::*;
+use actix_web::{
+    web,
+    web::{Json, Data},
+    HttpServer, App
+};
+use actix_files as fs;
+
+use stats::{IncGeneratedCaptchas, GetStats, StatsActor};
+use cleanup::{CleanupActor, AddEntry};
 
 #[derive(Serialize)]
 struct Response {
@@ -16,61 +24,58 @@ struct Response {
     url: String
 }
 
-fn new(_req: &HttpRequest) -> Json<Response> {
-    let font_family = std::env::var("KOCAPTCHA_FONT_FAMILY").ok();
-
+async fn new(font: Data<Font<'static>>, stats_addr: Data<Addr<StatsActor>>, cleanup_addr: Data<Addr<CleanupActor>>) -> Json<Response> {
     // File name is md5
-    let (captcha_md5, image_md5) = generate_text::generate_text(font_family);
+    let (captcha_md5, image_md5) = generate_text::generate_text(&font);
+
+    let url = format!("/captchas/{}.png", &image_md5);
 
     let response = Json(
         Response {
-            md5: captcha_md5.clone(),
+            md5: captcha_md5,
             token: image_md5.clone(),
-            url: format!("/captchas/{}.png", image_md5.clone())
+            url: url
         }
     );
 
-    let _ = thread::spawn(move || {
-        thread::sleep(Duration::new(60 * 5, 0)); // sleep ~5 minutes
-        let _ = std::fs::remove_file(format!("./captchas/{}.png", image_md5.clone()));
-    });
+    // Schedule a cleanup job
+    cleanup_addr.do_send(AddEntry(image_md5));
 
-    // Optionally add 1 to the stat thing
-    #[cfg(feature = "generated-captchas-stat")]
-    generated_captchas_stat::inc();
+    // Increment the amount of generated captchas
+    stats_addr.do_send(IncGeneratedCaptchas);
 
     return response;
 }
 
-fn index(_req: &HttpRequest) -> String {
-    #[allow(unused_mut)]
+async fn index(stats_addr: Data<Addr<StatsActor>>) -> String {
     let mut result: String = include_str!("index.txt").to_string();
 
-    #[cfg(feature = "generated-captchas-stat")]
-    {
-        let gend = generated_captchas_stat::get();
+    let stats = stats_addr.send(GetStats).await.unwrap();
 
-        result += &format!("\nCaptchas generated since last restart: {}", gend)
-    }
+    result += &format!("\nCaptchas generated since last restart: {}", stats.generated_captchas);
 
     return result;
 }
 
-fn main() {
+#[actix_rt::main]
+async fn main() {
     let _ = std::fs::create_dir("captchas");
 
-    server::new(||
-                App::new()
-                .handler(
-                    "/captchas",
-                    fs::StaticFiles::new("./captchas")
-                        .unwrap()
-                )
-                .resource("/new", |r| r.f(new))
-                .resource("/", |r| r.f(index))
-                .finish()
-    ).bind("0.0.0.0:9093").unwrap().run();
+    let stats_actor_addr = StatsActor::default().start();
+    let cleanup_actor_addr = CleanupActor::default().start();
 
-    // Remove captcha directory if there are still any there
-    let _ = std::fs::remove_dir_all("./captchas");
+    HttpServer::new(move || {
+
+        let font = generate_text::make_font();
+
+        App::new()
+            .data(stats_actor_addr.clone())
+            .data(cleanup_actor_addr.clone())
+            .data(font)
+            .service(
+                fs::Files::new("/captchas", "./captchas")
+            )
+            .route("/new", web::get().to(new))
+            .route("/", web::get().to(index))
+    }).bind("0.0.0.0:9093").unwrap().run().await.unwrap();
 }

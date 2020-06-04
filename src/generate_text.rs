@@ -6,7 +6,7 @@ extern crate rand;
 extern crate crypto;
 
 use self::font_loader::system_fonts;
-use self::rusttype::{FontCollection, Scale};
+use self::rusttype::{Font, Scale};
 use self::image::{Rgb, RgbImage, Pixel};
 use self::imageproc::drawing::draw_text_mut;
 use self::imageproc::noise::salt_and_pepper_noise_mut;
@@ -18,15 +18,16 @@ use self::rand::distributions::Alphanumeric;
 use self::crypto::md5::Md5;
 use self::crypto::digest::Digest;
 
-pub fn generate_text(family: Option<String>) -> (String, String) {
-    let sysfonts = system_fonts::query_all();
-    let family = family.unwrap_or(sysfonts.first().unwrap().to_string()); // Use the first available font if none is specified
+pub fn make_font() -> Font<'static> {
+    let family = std::env::var("KOCAPTCHA_FONT_FAMILY").expect("Expected KOCAPTCHA_FONT_FAMILY to be set");
 
     let prop = system_fonts::FontPropertyBuilder::new().family(&family).build();
     let (font_data, _) = system_fonts::get(&prop).unwrap();
 
-    let font = FontCollection::from_bytes(font_data).unwrap().into_font().unwrap();
+    Font::from_bytes(font_data).unwrap()
+}
 
+pub fn generate_text(font: &Font) -> (String, String) {
     let mut image = RgbImage::new(400, 150);
     let (w, h) = (image.width(), image.height());
 
